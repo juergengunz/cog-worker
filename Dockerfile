@@ -12,7 +12,7 @@ ENV RUNPOD_REQUEST_TIMEOUT=600
 RUN /root/.pyenv/versions/3.10.18/bin/pip install --upgrade runpod
 
 ADD src/handler.py /rp_handler.py
-ADD src/predictor.py /usr/local/lib/python3.10/site-packages/cog/server/predictor.py
+ADD src/predict.py /src/predict.py
 
 # Run the handler with the python from the base image.
 CMD ["python", "-u", "/rp_handler.py"]
