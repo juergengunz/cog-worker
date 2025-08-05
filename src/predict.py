@@ -128,7 +128,7 @@ class Predictor(BasePredictor):
         prompt: str = Input(description="Prompt for generated image"),
         aspect_ratio: str = Input(
             description="Aspect ratio for the generated image",
-            choices=list(ASPECT_RATIOS.keys()),
+            choices=["1:1", "16:9", "21:9", "3:2", "2:3", "4:5", "5:4", "3:4", "4:3", "9:16", "9:21"],
             default="1:1"
         ),
         image: Path = Input(
