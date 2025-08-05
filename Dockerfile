@@ -8,10 +8,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV RUNPOD_REQUEST_TIMEOUT=600
 
 # The base image already has a working Python environment.
-# We just need to install the runpod library.
-RUN python3 -m pip install runpod --upgrade
+# We just need to install the runpod library and upgrade cog.
+RUN pip install --upgrade runpod cog
 
 ADD src/handler.py /rp_handler.py
 
 # Run the handler with the python from the base image.
-CMD ["python3", "-u", "/rp_handler.py"]
+CMD ["python", "-u", "/rp_handler.py"]
