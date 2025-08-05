@@ -16,15 +16,8 @@ cog_session.mount('http://', HTTPAdapter(max_retries=retries))
 
 
 # ----------------------------- Start API Service ---------------------------- #
-# Open a file to redirect cog's stdout and stderr
-cog_log_file = open("cog_server.log", "w")
-
 # Call "python -m cog.server.http" in a subprocess to start the API service.
-subprocess.Popen(
-    ["python", "-m", "cog.server.http"],
-    stdout=cog_log_file,
-    stderr=subprocess.STDOUT
-)
+subprocess.Popen(["python3", "-m", "cog.server.http"])
 
 
 # ---------------------------------------------------------------------------- #
@@ -57,27 +50,16 @@ def run_inference(inference_request):
     '''
     response = cog_session.post(url=f'{LOCAL_URL}/predictions',
                                 json=inference_request, timeout=TIMEOUT)
-
-    if response.status_code != 200:
-        print(f"Prediction failed with status {response.status_code}: {response.text}")
-        response.raise_for_status()
-
-    try:
-        return response.json()
-    except requests.exceptions.JSONDecodeError as e:
-        print(f"Failed to decode JSON from prediction response. Status: {response.status_code}, Body: '{response.text}'")
-        raise e
+    return response.json()
 
 
 def handler(event):
     '''
     This is the handler function that will be called by the serverless.
     '''
-    if event.get("endpoint", None) == "logs":
-        with open("cog_server.log", "r") as f:
-            return f.read()
+    json_response = run_inference({"input": event["input"]})
 
-    return run_inference({"input": event["input"]})
+    return json_response["output"]
 
 
 if __name__ == "__main__":
