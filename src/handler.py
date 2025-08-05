@@ -52,9 +52,14 @@ def run_inference(inference_request):
                                 json=inference_request, timeout=TIMEOUT)
 
     if response.status_code != 200:
-        print("Request failed - reason :", response.status_code, response.text)
+        print(f"Prediction failed with status {response.status_code}: {response.text}")
+        response.raise_for_status()
 
-    return response.json()
+    try:
+        return response.json()
+    except requests.exceptions.JSONDecodeError as e:
+        print(f"Failed to decode JSON from prediction response. Status: {response.status_code}, Body: '{response.text}'")
+        raise e
 
 
 def handler(event):
