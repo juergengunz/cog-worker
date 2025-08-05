@@ -9,9 +9,10 @@ ENV RUNPOD_REQUEST_TIMEOUT=600
 
 # Install necessary packages and Python 3.10
 RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends software-properties-common ca-certificates lsb-release curl git openssh-server && \
-    echo "deb https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/deadsnakes-ppa.list && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F23C5A6CF475977595C89F51BA6932366A755776 && \
+    apt-get install -y --no-install-recommends ca-certificates curl gnupg git openssh-server && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -sS "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xBA6932366A755776" | gpg --dearmor -o /etc/apt/keyrings/deadsnakes-ppa.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/deadsnakes-ppa.gpg] https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy main" | tee /etc/apt/sources.list.d/deadsnakes-ppa.list > /dev/null && \
     apt-get update && \
     apt-get install -y --no-install-recommends python3.10 python3.10-dev python3.10-distutils && \
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1 &&\
