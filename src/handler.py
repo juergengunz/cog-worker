@@ -16,8 +16,15 @@ cog_session.mount('http://', HTTPAdapter(max_retries=retries))
 
 
 # ----------------------------- Start API Service ---------------------------- #
-# Call "python -m cog.server.http" in a subprocess to start the API service.
-subprocess.Popen(["python", "-m", "cog.server.http"])
+# Open a file to redirect cog's stdout and stderr for debugging
+cog_log_file = open("cog_server.log", "w")
+
+# Start the cog server in a subprocess
+subprocess.Popen(
+    ["python", "-m", "cog.server.http"],
+    stdout=cog_log_file,
+    stderr=subprocess.STDOUT
+)
 
 
 # ---------------------------------------------------------------------------- #
@@ -50,6 +57,7 @@ def run_inference(inference_request):
     '''
     response = cog_session.post(url=f'{LOCAL_URL}/predictions',
                                 json=inference_request, timeout=TIMEOUT)
+    response.raise_for_status()
     return response.json()
 
 
@@ -57,9 +65,17 @@ def handler(event):
     '''
     This is the handler function that will be called by the serverless.
     '''
-    json_response = run_inference({"input": event["input"]})
-
-    return json_response["output"]
+    try:
+        json_response = run_inference({"input": event["input"]})
+        return json_response["output"]
+    except Exception as err:
+        print(f"An error occurred: {err}")
+        try:
+            with open("cog_server.log", "r") as f:
+                logs = f.read()
+            return {"error": f"The cog server crashed or returned an error. Logs: \n{logs}"}
+        except Exception as log_err:
+            return {"error": f"An unexpected error occurred, and the log file could not be read: {log_err}"}
 
 
 if __name__ == "__main__":
