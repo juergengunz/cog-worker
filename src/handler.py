@@ -16,8 +16,15 @@ cog_session.mount('http://', HTTPAdapter(max_retries=retries))
 
 
 # ----------------------------- Start API Service ---------------------------- #
+# Open a file to redirect cog's stdout and stderr
+cog_log_file = open("cog_server.log", "w")
+
 # Call "python -m cog.server.http" in a subprocess to start the API service.
-subprocess.Popen(["python", "-m", "cog.server.http"])
+subprocess.Popen(
+    ["python", "-m", "cog.server.http"],
+    stdout=cog_log_file,
+    stderr=subprocess.STDOUT
+)
 
 
 # ---------------------------------------------------------------------------- #
@@ -66,10 +73,11 @@ def handler(event):
     '''
     This is the handler function that will be called by the serverless.
     '''
+    if event.get("endpoint", None) == "logs":
+        with open("cog_server.log", "r") as f:
+            return f.read()
 
-    json = run_inference({"input": event["input"]})
-
-    return json["output"]
+    return run_inference({"input": event["input"]})
 
 
 if __name__ == "__main__":
